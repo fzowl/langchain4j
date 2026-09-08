@@ -2,7 +2,9 @@
 sidebar_position: 5
 ---
 
-# Voyage AI
+# VoyageAI by MongoDB
+
+> Voyage AI is now part of MongoDB; the service and its models are branded **VoyageAI by MongoDB**.
 
 ## Maven Dependency
 
@@ -15,9 +17,15 @@ sidebar_position: 5
 ```
 
 
-## Voyage AI Models
+## APIs
 
 - `VoyageAiScoringModel`
+
+## Models
+
+Set the reranker via `VoyageAiScoringModel.builder().modelName(...)`. Current models
+(see the [VoyageAI by MongoDB reranker docs](https://docs.voyageai.com/docs/reranker)):
+`rerank-2.5`, `rerank-2.5-lite` (recommended), `rerank-2`, `rerank-2-lite`, `rerank-1`, `rerank-lite-1`.
 
 
 ## Examples

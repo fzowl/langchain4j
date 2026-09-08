@@ -4,9 +4,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 public enum VoyageAiEmbeddingModelName {
+    // Latest generation (voyage-4 family). Dimension is the default (1024);
+    // 256, 512 and 2048 are also selectable per request.
+    // See https://docs.voyageai.com/docs/embeddings
+    VOYAGE_4_LARGE("voyage-4-large", 1024),
+    VOYAGE_4("voyage-4", 1024),
+    VOYAGE_4_LITE("voyage-4-lite", 1024),
+    VOYAGE_CODE_4("voyage-code-4", 1024),
+
+    VOYAGE_3_LARGE("voyage-3-large", 1024),
+    VOYAGE_3_5("voyage-3.5", 1024),
+    VOYAGE_3_5_LITE("voyage-3.5-lite", 1024),
     VOYAGE_3("voyage-3", 1024),
     VOYAGE_3_LITE("voyage-3-lite", 512),
-    VOYAGE_3_LARGE("voyage-3-large", 1024),
 
     VOYAGE_FINANCE_2("voyage-finance-2", 1024),
 
