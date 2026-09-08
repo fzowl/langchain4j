@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 
 /**
  * An implementation of a {@link ScoringModel} that uses
- * <a href="https://docs.voyageai.com/docs/reranker">Voyage AI Rerank API</a>.
+ * <a href="https://docs.voyageai.com/docs/reranker">VoyageAI by MongoDB Rerank API</a>.
  */
 public class VoyageAiScoringModel implements ScoringModel {
 

@@ -562,8 +562,8 @@ rather than silently ignoring it. See also
 #### Multimodal embeddings
 
 Some models embed images (and interleaved text + image) into the same vector space. Build inputs from `Content`
-parts; on models that support it (Cohere Embed v4, Voyage multimodal, Google Gemini Embedding 2, Amazon Titan
-Multimodal, Jina CLIP, ...) the parts are fused into a single embedding:
+parts; on models that support it (Cohere Embed v4, VoyageAI by MongoDB multimodal, Google Gemini Embedding 2,
+Amazon Titan Multimodal, Jina CLIP, ...) the parts are fused into a single embedding:
 
 ```java
 EmbeddingResponse response = embeddingModel.embed(EmbeddingRequest.builder()
@@ -706,7 +706,7 @@ EmbeddingStoreIngestor ingestor = EmbeddingStoreIngestor.builder()
 
 #### Query vs Document Embeddings (opt-in)
 
-Some embedding models (e.g. Cohere Embed v4, Voyage, Google) produce better retrieval quality when documents
+Some embedding models (e.g. Cohere Embed v4, VoyageAI by MongoDB, Google) produce better retrieval quality when documents
 and queries are embedded differently. You can opt in by declaring the input type: `DOCUMENT` on the
 `EmbeddingStoreIngestor` (for the indexed segments) and `QUERY` on the `EmbeddingStoreContentRetriever` (for the
 query, see [Embedding Store Content Retriever](#embedding-store-content-retriever)).

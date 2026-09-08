@@ -2,7 +2,7 @@
 sidebar_position: 5
 ---
 
-# Voyage AI
+# VoyageAI by MongoDB
 
 ## Maven Dependency
 
@@ -15,9 +15,18 @@ sidebar_position: 5
 ```
 
 
-## Voyage AI Models
+## APIs
 
 - `VoyageAiScoringModel`
+
+## Models
+
+The reranker model names below are known to `VoyageAiScoringModelName`; any other name accepted by the API can be
+passed as a `String`. See the [VoyageAI by MongoDB reranker docs](https://docs.voyageai.com/docs/reranker) for the
+authoritative, up-to-date list.
+
+- **Current**: `rerank-3`, `rerank-3-lite`, `rerank-2.5`, `rerank-2.5-lite`
+- **Previous generation** (still accessible): `rerank-2`, `rerank-2-lite`, `rerank-1`, `rerank-lite-1`
 
 
 ## Examples

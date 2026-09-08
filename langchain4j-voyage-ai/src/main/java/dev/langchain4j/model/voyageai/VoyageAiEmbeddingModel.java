@@ -13,7 +13,6 @@ import dev.langchain4j.data.message.Content;
 import dev.langchain4j.data.message.ContentType;
 import dev.langchain4j.data.message.ImageContent;
 import dev.langchain4j.data.message.TextContent;
-import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.exception.UnsupportedFeatureException;
 import dev.langchain4j.http.client.HttpClientBuilder;
 import dev.langchain4j.model.ModelProvider;
@@ -25,7 +24,6 @@ import dev.langchain4j.model.embedding.request.EmbeddingInputType;
 import dev.langchain4j.model.embedding.request.EmbeddingParameter;
 import dev.langchain4j.model.embedding.request.EmbeddingRequestParameters;
 import dev.langchain4j.model.embedding.response.EmbeddingResponseMetadata;
-import dev.langchain4j.model.output.Response;
 import dev.langchain4j.model.output.TokenUsage;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -38,7 +36,7 @@ import org.slf4j.Logger;
 
 /**
  * An implementation of an {@link EmbeddingModel} that uses
- * <a href="https://docs.voyageai.com/docs/embeddings">Voyage AI Embedding API</a>.
+ * <a href="https://docs.voyageai.com/docs/embeddings">VoyageAI by MongoDB Embedding API</a>.
  */
 public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
 
@@ -180,10 +178,12 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
         if (content instanceof ImageContent imageContent) {
             var image = imageContent.image();
             if (image.url() != null) {
-                return MultimodalEmbeddingRequest.ContentBlock.imageUrl(image.url().toString());
+                return MultimodalEmbeddingRequest.ContentBlock.imageUrl(
+                        image.url().toString());
             }
             if (image.base64Data() != null) {
-                String dataUrl = "data:" + getOrDefault(image.mimeType(), "image/png") + ";base64," + image.base64Data();
+                String dataUrl =
+                        "data:" + getOrDefault(image.mimeType(), "image/png") + ";base64," + image.base64Data();
                 return MultimodalEmbeddingRequest.ContentBlock.imageBase64(dataUrl);
             }
             throw new UnsupportedFeatureException("ImageContent must have either a URL or base64 data");

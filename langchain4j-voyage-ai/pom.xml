@@ -9,7 +9,7 @@
     </parent>
 
     <artifactId>langchain4j-voyage-ai</artifactId>
-    <name>LangChain4j :: Integration :: Voyage AI</name>
+    <name>LangChain4j :: Integration :: VoyageAI by MongoDB</name>
 
     <dependencies>
 
