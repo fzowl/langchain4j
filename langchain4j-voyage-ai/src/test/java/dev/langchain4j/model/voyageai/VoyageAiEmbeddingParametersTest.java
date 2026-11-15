@@ -66,12 +66,82 @@ class VoyageAiEmbeddingParametersTest {
                         VoyageAiEmbeddingRequestParameters.ENCODING_FORMAT);
     }
 
-    @ParameterizedTest
-    @ValueSource(strings = {"voyage-multimodal-3", "voyage-multimodal-3.5"})
-    void should_not_declare_encoding_format_for_a_multimodal_model(String modelName) {
-        assertThat(model(respondingMock(), modelName).supportedParameters())
+    @Test
+    void should_not_declare_encoding_format_or_dimensions_for_the_fixed_dimension_multimodal_model() {
+        assertThat(model(respondingMock(), "voyage-multimodal-3").supportedParameters())
                 .containsExactlyInAnyOrder(
                         EmbeddingRequestParameters.INPUT_TYPE, VoyageAiEmbeddingRequestParameters.TRUNCATION);
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {"voyage-4-large", "voyage-4", "voyage-4-lite", "voyage-code-4", "voyage-3.5", "voyage-3-large"})
+    void should_declare_dimensions_for_a_matryoshka_model(String modelName) {
+        assertThat(model(respondingMock(), modelName).supportedParameters())
+                .contains(EmbeddingRequestParameters.DIMENSIONS);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"voyage-3", "voyage-3-lite", "voyage-finance-2", "voyage-law-2", "voyage-multimodal-3"})
+    void should_not_declare_dimensions_for_a_fixed_dimension_model(String modelName) {
+        assertThat(model(respondingMock(), modelName).supportedParameters())
+                .doesNotContain(EmbeddingRequestParameters.DIMENSIONS);
+    }
+
+    @Test
+    void should_declare_dimensions_but_not_encoding_format_for_the_multimodal_3_5_model() {
+        assertThat(model(respondingMock(), MULTIMODAL_MODEL).supportedParameters())
+                .containsExactlyInAnyOrder(
+                        EmbeddingRequestParameters.INPUT_TYPE,
+                        VoyageAiEmbeddingRequestParameters.TRUNCATION,
+                        EmbeddingRequestParameters.DIMENSIONS);
+    }
+
+    @Test
+    void should_send_output_dimension_only_when_requested() throws Exception {
+        MockHttpClient withoutDimensions = respondingMock();
+        model(withoutDimensions, "voyage-4-lite").embed("hello");
+        assertThat(requestBody(withoutDimensions).has("output_dimension")).isFalse();
+
+        MockHttpClient perCall = respondingMock();
+        model(perCall, "voyage-4-lite")
+                .embed(EmbeddingRequest.builder().input("hello").dimensions(256).build());
+        assertThat(requestBody(perCall).get("output_dimension").intValue()).isEqualTo(256);
+
+        MockHttpClient builderDefault = respondingMock();
+        VoyageAiEmbeddingModel model =
+                modelBuilder(builderDefault, "voyage-code-4").dimensions(512).build();
+        model.embed("hello");
+        assertThat(requestBody(builderDefault).get("output_dimension").intValue())
+                .isEqualTo(512);
+        assertThat(model.dimension()).isEqualTo(512);
+    }
+
+    @Test
+    void should_send_output_dimension_on_the_multimodal_endpoint() throws Exception {
+        MockHttpClient mock = respondingMock();
+
+        model(mock, MULTIMODAL_MODEL)
+                .embed(EmbeddingRequest.builder().input("hello").dimensions(256).build());
+
+        assertThat(mock.request().url()).endsWith("/multimodalembeddings");
+        assertThat(requestBody(mock).get("output_dimension").intValue()).isEqualTo(256);
+    }
+
+    @Test
+    void should_reject_dimensions_for_a_fixed_dimension_model() {
+        assertThatExceptionOfType(UnsupportedFeatureException.class)
+                .isThrownBy(() -> model(new MockHttpClient(), TEXT_MODEL)
+                        .embed(EmbeddingRequest.builder()
+                                .input("hello")
+                                .dimensions(256)
+                                .build()));
+
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> modelBuilder(new MockHttpClient(), TEXT_MODEL)
+                        .dimensions(256)
+                        .build())
+                .withMessageContaining("voyage-3");
     }
 
     @Test

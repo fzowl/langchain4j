@@ -6,7 +6,6 @@ import static dev.langchain4j.internal.Utils.copy;
 import static dev.langchain4j.internal.Utils.getOrDefault;
 import static dev.langchain4j.internal.ValidationUtils.ensureNotBlank;
 import static dev.langchain4j.internal.ValidationUtils.ensureNotNull;
-import static dev.langchain4j.model.voyageai.VoyageAiClient.DEFAULT_BASE_URL;
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
 
@@ -31,7 +30,7 @@ import org.slf4j.Logger;
 
 /**
  * An implementation of a {@link ScoringModel} that uses
- * <a href="https://docs.voyageai.com/docs/reranker">Voyage AI Rerank API</a>.
+ * <a href="https://docs.voyageai.com/docs/reranker">Voyage AI by MongoDB Rerank API</a>.
  */
 public class VoyageAiScoringModel implements ScoringModel {
 
@@ -59,7 +58,8 @@ public class VoyageAiScoringModel implements ScoringModel {
         // Below attributes are force to non-null
         this.maxRetries = getOrDefault(maxRetries, 2);
         this.modelName = ensureNotBlank(modelName, "modelName");
-        this.defaultRequestParameters = ScoringRequestParameters.builder().modelName(this.modelName).build();
+        this.defaultRequestParameters =
+                ScoringRequestParameters.builder().modelName(this.modelName).build();
         // Below attributes can be null
         this.truncation = truncation;
         this.topK = topK;
@@ -67,7 +67,7 @@ public class VoyageAiScoringModel implements ScoringModel {
 
         this.client = VoyageAiClient.builder()
                 .httpClientBuilder(httpClientBuilder)
-                .baseUrl(getOrDefault(baseUrl, DEFAULT_BASE_URL))
+                .baseUrl(baseUrl)
                 .apiKey(ensureNotBlank(apiKey, "apiKey"))
                 .timeout(getOrDefault(timeout, ofSeconds(60)))
                 .logRequests(getOrDefault(logRequests, false))
@@ -80,7 +80,8 @@ public class VoyageAiScoringModel implements ScoringModel {
         // Below attributes are force to non-null
         this.maxRetries = getOrDefault(builder.maxRetries, 2);
         this.modelName = ensureNotBlank(builder.modelName, "modelName");
-        this.defaultRequestParameters = ScoringRequestParameters.builder().modelName(this.modelName).build();
+        this.defaultRequestParameters =
+                ScoringRequestParameters.builder().modelName(this.modelName).build();
         // Below attributes can be null
         this.truncation = builder.truncation;
         this.topK = builder.topK;
@@ -88,7 +89,7 @@ public class VoyageAiScoringModel implements ScoringModel {
 
         this.client = VoyageAiClient.builder()
                 .httpClientBuilder(builder.httpClientBuilder)
-                .baseUrl(getOrDefault(builder.baseUrl, DEFAULT_BASE_URL))
+                .baseUrl(builder.baseUrl)
                 .apiKey(ensureNotBlank(builder.apiKey, "apiKey"))
                 .timeout(getOrDefault(builder.timeout, ofSeconds(60)))
                 .logRequests(getOrDefault(builder.logRequests, false))
@@ -229,7 +230,8 @@ public class VoyageAiScoringModel implements ScoringModel {
 
         /**
          * Sets the base URL of the Voyage AI API.
-         * Defaults to {@code "https://api.voyageai.com/v1/"}.
+         * Defaults to {@code "https://api.voyageai.com/v1/"}, or to {@code "https://ai.mongodb.com/v1/"} when the
+         * API key starts with {@code al-}. A base URL set here always wins.
          *
          * @param baseUrl the base URL
          * @return {@code this}
@@ -263,7 +265,7 @@ public class VoyageAiScoringModel implements ScoringModel {
 
         /**
          * Sets the Voyage AI API key used to authenticate requests.
-         * See <a href="https://dash.voyageai.com/api-keys">Voyage AI dashboard</a> to obtain a key.
+         * See <a href="https://dashboard.voyageai.com/api-keys">Voyage AI by MongoDB dashboard</a> to obtain a key.
          *
          * @param apiKey the Voyage AI API key
          * @return {@code this}

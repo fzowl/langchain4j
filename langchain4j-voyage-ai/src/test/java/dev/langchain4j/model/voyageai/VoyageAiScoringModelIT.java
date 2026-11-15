@@ -79,6 +79,29 @@ class VoyageAiScoringModelIT {
         assertThat(response.finishReason()).isNull();
     }
 
+    @Test
+    void should_score_with_rerank_3_and_top_k() {
+
+        // given
+        ScoringModel model = VoyageAiScoringModel.builder()
+                .apiKey(System.getenv("VOYAGE_API_KEY"))
+                .modelName(VoyageAiScoringModelName.RERANK_3)
+                .topK(2)
+                .timeout(Duration.ofSeconds(60))
+                .build();
+
+        List<TextSegment> segments = asList(
+                TextSegment.from("The Maine Coon is a large domesticated cat breed."),
+                TextSegment.from("The Labrador Retriever is one of America's most popular dog breeds."));
+
+        // when
+        Response<List<Double>> response = model.scoreAll(segments, "tell me about dogs");
+
+        // then
+        assertThat(response.content()).hasSize(2);
+        assertThat(response.content().get(0)).isLessThan(response.content().get(1));
+    }
+
     @AfterEach
     void afterEach() throws InterruptedException {
         String ciDelaySeconds = System.getenv("CI_DELAY_SECONDS_VOYAGE_AI");

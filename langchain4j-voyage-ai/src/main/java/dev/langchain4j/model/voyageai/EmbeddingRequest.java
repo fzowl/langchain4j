@@ -9,16 +9,23 @@ class EmbeddingRequest {
     private String inputType;
     private Boolean truncation;
     private String encodingFormat;
+    private Integer outputDimension;
 
-    EmbeddingRequest() {
-    }
+    EmbeddingRequest() {}
 
-    EmbeddingRequest(List<String> input, String model, String inputType, Boolean truncation, String encodingFormat) {
+    EmbeddingRequest(
+            List<String> input,
+            String model,
+            String inputType,
+            Boolean truncation,
+            String encodingFormat,
+            Integer outputDimension) {
         this.input = input;
         this.model = model;
         this.inputType = inputType;
         this.truncation = truncation;
         this.encodingFormat = encodingFormat;
+        this.outputDimension = outputDimension;
     }
 
     public List<String> getInput() {
@@ -41,6 +48,10 @@ class EmbeddingRequest {
         return encodingFormat;
     }
 
+    public Integer getOutputDimension() {
+        return outputDimension;
+    }
+
     static Builder builder() {
         return new Builder();
     }
@@ -52,6 +63,7 @@ class EmbeddingRequest {
         private String inputType;
         private Boolean truncation;
         private String encodingFormat;
+        private Integer outputDimension;
 
         Builder input(List<String> input) {
             this.input = input;
@@ -78,8 +90,13 @@ class EmbeddingRequest {
             return this;
         }
 
+        Builder outputDimension(Integer outputDimension) {
+            this.outputDimension = outputDimension;
+            return this;
+        }
+
         EmbeddingRequest build() {
-            return new EmbeddingRequest(input, model, inputType, truncation, encodingFormat);
+            return new EmbeddingRequest(input, model, inputType, truncation, encodingFormat, outputDimension);
         }
     }
 }

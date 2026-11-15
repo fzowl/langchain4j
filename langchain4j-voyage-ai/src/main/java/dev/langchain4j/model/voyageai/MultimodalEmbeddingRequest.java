@@ -13,12 +13,15 @@ class MultimodalEmbeddingRequest {
     private String model;
     private String inputType;
     private Boolean truncation;
+    private Integer outputDimension;
 
-    MultimodalEmbeddingRequest(List<MultimodalInput> inputs, String model, String inputType, Boolean truncation) {
+    MultimodalEmbeddingRequest(
+            List<MultimodalInput> inputs, String model, String inputType, Boolean truncation, Integer outputDimension) {
         this.inputs = inputs;
         this.model = model;
         this.inputType = inputType;
         this.truncation = truncation;
+        this.outputDimension = outputDimension;
     }
 
     public List<MultimodalInput> getInputs() {
@@ -37,6 +40,10 @@ class MultimodalEmbeddingRequest {
         return truncation;
     }
 
+    public Integer getOutputDimension() {
+        return outputDimension;
+    }
+
     static Builder builder() {
         return new Builder();
     }
@@ -47,6 +54,7 @@ class MultimodalEmbeddingRequest {
         private String model;
         private String inputType;
         private Boolean truncation;
+        private Integer outputDimension;
 
         Builder inputs(List<MultimodalInput> inputs) {
             this.inputs = inputs;
@@ -68,8 +76,13 @@ class MultimodalEmbeddingRequest {
             return this;
         }
 
+        Builder outputDimension(Integer outputDimension) {
+            this.outputDimension = outputDimension;
+            return this;
+        }
+
         MultimodalEmbeddingRequest build() {
-            return new MultimodalEmbeddingRequest(inputs, model, inputType, truncation);
+            return new MultimodalEmbeddingRequest(inputs, model, inputType, truncation, outputDimension);
         }
     }
 

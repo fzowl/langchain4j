@@ -1,10 +1,10 @@
 package dev.langchain4j.model.voyageai;
 
+import static dev.langchain4j.internal.Exceptions.illegalArgument;
 import static dev.langchain4j.internal.RetryUtils.withRetryMappingExceptions;
 import static dev.langchain4j.internal.Utils.copy;
 import static dev.langchain4j.internal.Utils.getOrDefault;
 import static dev.langchain4j.internal.ValidationUtils.ensureNotBlank;
-import static dev.langchain4j.model.voyageai.VoyageAiClient.DEFAULT_BASE_URL;
 import static java.time.Duration.ofSeconds;
 import static java.util.stream.Collectors.toList;
 
@@ -28,6 +28,7 @@ import dev.langchain4j.model.output.TokenUsage;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,7 +37,7 @@ import org.slf4j.Logger;
 
 /**
  * An implementation of an {@link EmbeddingModel} that uses
- * <a href="https://docs.voyageai.com/docs/embeddings">Voyage AI Embedding API</a>.
+ * <a href="https://docs.voyageai.com/docs/embeddings">Voyage AI by MongoDB Embedding API</a>.
  */
 public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
 
@@ -47,6 +48,7 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
     private final Boolean truncation;
     private final String encodingFormat;
     private final Integer maxSegmentsPerBatch;
+    private final Integer dimensions;
     private final boolean multimodal;
     private final List<EmbeddingModelListener> listeners;
 
@@ -71,12 +73,13 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
         this.truncation = truncation;
         this.inputType = inputType;
         this.encodingFormat = encodingFormat;
+        this.dimensions = null;
         this.multimodal = isMultimodalModel(this.modelName);
         this.listeners = List.of();
 
         this.client = VoyageAiClient.builder()
                 .httpClientBuilder(httpClientBuilder)
-                .baseUrl(getOrDefault(baseUrl, DEFAULT_BASE_URL))
+                .baseUrl(baseUrl)
                 .apiKey(ensureNotBlank(apiKey, "apiKey"))
                 .timeout(getOrDefault(timeout, ofSeconds(60)))
                 .logRequests(getOrDefault(logRequests, false))
@@ -92,12 +95,18 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
         this.truncation = builder.truncation;
         this.inputType = builder.inputType;
         this.encodingFormat = builder.encodingFormat;
+        this.dimensions = builder.dimensions;
         this.multimodal = getOrDefault(builder.multimodal, isMultimodalModel(this.modelName));
         this.listeners = copy(builder.listeners);
+        if (this.dimensions != null && !VoyageAiEmbeddingModelName.supportsOutputDimension(this.modelName)) {
+            throw illegalArgument(
+                    "'dimensions' is not supported by the model '%s', which has a single fixed dimension",
+                    this.modelName);
+        }
 
         this.client = VoyageAiClient.builder()
                 .httpClientBuilder(builder.httpClientBuilder)
-                .baseUrl(getOrDefault(builder.baseUrl, DEFAULT_BASE_URL))
+                .baseUrl(builder.baseUrl)
                 .apiKey(ensureNotBlank(builder.apiKey, "apiKey"))
                 .timeout(getOrDefault(builder.timeout, ofSeconds(60)))
                 .logRequests(getOrDefault(builder.logRequests, false))
@@ -114,20 +123,23 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
 
     @Override
     public Set<EmbeddingParameter<?>> supportedParameters() {
-        if (multimodal) {
-            return Set.of(
-                    EmbeddingRequestParameters.INPUT_TYPE,
-                    VoyageAiEmbeddingRequestParameters.TRUNCATION); // the multimodal request has no encoding_format
+        Set<EmbeddingParameter<?>> parameters = new HashSet<>();
+        parameters.add(EmbeddingRequestParameters.INPUT_TYPE);
+        parameters.add(VoyageAiEmbeddingRequestParameters.TRUNCATION);
+        if (!multimodal) {
+            // the multimodal request has no encoding_format
+            parameters.add(VoyageAiEmbeddingRequestParameters.ENCODING_FORMAT);
         }
-        return Set.of(
-                EmbeddingRequestParameters.INPUT_TYPE,
-                VoyageAiEmbeddingRequestParameters.TRUNCATION,
-                VoyageAiEmbeddingRequestParameters.ENCODING_FORMAT);
+        if (VoyageAiEmbeddingModelName.supportsOutputDimension(modelName)) {
+            parameters.add(EmbeddingRequestParameters.DIMENSIONS);
+        }
+        return Set.copyOf(parameters);
     }
 
     @Override
     public EmbeddingRequestParameters defaultRequestParameters() {
         return VoyageAiEmbeddingRequestParameters.builder()
+                .dimensions(dimensions)
                 .truncation(truncation)
                 .encodingFormat(multimodal ? null : encodingFormat)
                 .build();
@@ -141,6 +153,7 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
         String effectiveInputType = getOrDefault(toVoyageInputType(parameters.inputType()), inputType);
         Boolean effectiveTruncation =
                 getOrDefault(parameters.parameter(VoyageAiEmbeddingRequestParameters.TRUNCATION), truncation);
+        Integer effectiveDimensions = getOrDefault(parameters.dimensions(), dimensions);
         String effectiveEncodingFormat =
                 getOrDefault(parameters.parameter(VoyageAiEmbeddingRequestParameters.ENCODING_FORMAT), encodingFormat);
 
@@ -159,6 +172,7 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
                         .model(modelName)
                         .inputType(effectiveInputType)
                         .truncation(effectiveTruncation)
+                        .outputDimension(effectiveDimensions)
                         .build();
                 wireResponse = withRetryMappingExceptions(() -> client.multimodalEmbed(wireRequest), maxRetries);
             } else {
@@ -168,6 +182,7 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
                         .inputType(effectiveInputType)
                         .truncation(effectiveTruncation)
                         .encodingFormat(effectiveEncodingFormat)
+                        .outputDimension(effectiveDimensions)
                         .build();
                 wireResponse = withRetryMappingExceptions(() -> client.embed(wireRequest), maxRetries);
             }
@@ -243,7 +258,7 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
 
     @Override
     protected Integer knownDimension() {
-        return VoyageAiEmbeddingModelName.knownDimension(modelName);
+        return getOrDefault(dimensions, VoyageAiEmbeddingModelName.knownDimension(modelName));
     }
 
     private List<Embedding> getEmbeddings(EmbeddingResponse response) {
@@ -281,6 +296,7 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
         private Boolean logResponses;
         private Logger logger;
         private Integer maxSegmentsPerBatch;
+        private Integer dimensions;
         private Boolean multimodal;
         private List<EmbeddingModelListener> listeners;
 
@@ -316,7 +332,8 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
 
         /**
          * Sets the base URL of the Voyage AI API.
-         * Defaults to {@code "https://api.voyageai.com/v1/"}.
+         * Defaults to {@code "https://api.voyageai.com/v1/"}, or to {@code "https://ai.mongodb.com/v1/"} when the
+         * API key starts with {@code al-}. A base URL set here always wins.
          *
          * @param baseUrl the base URL
          * @return {@code this}
@@ -350,7 +367,7 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
 
         /**
          * Sets the Voyage AI API key used to authenticate requests.
-         * See <a href="https://dash.voyageai.com/api-keys">Voyage AI dashboard</a> to obtain a key.
+         * See <a href="https://dashboard.voyageai.com/api-keys">Voyage AI by MongoDB dashboard</a> to obtain a key.
          *
          * @param apiKey the Voyage AI API key
          * @return {@code this}
@@ -468,6 +485,22 @@ public class VoyageAiEmbeddingModel extends DimensionAwareEmbeddingModel {
          */
         public Builder maxSegmentsPerBatch(Integer maxSegmentsPerBatch) {
             this.maxSegmentsPerBatch = maxSegmentsPerBatch;
+            return this;
+        }
+
+        /**
+         * Sets the number of dimensions of the resulting embeddings ({@code output_dimension}, Matryoshka).
+         * Voyage AI accepts 2048, 1024 (default), 512 and 256 for the models that support it
+         * (for example {@code voyage-4}, {@code voyage-code-4}, {@code voyage-3.5} and {@code voyage-multimodal-3.5});
+         * the other models have a single fixed dimension and reject this parameter.
+         * Can be overridden per call with {@code EmbeddingRequest.builder().dimensions(...)}.
+         * Not sent when {@code null} (default).
+         *
+         * @param dimensions the number of dimensions
+         * @return {@code this}
+         */
+        public Builder dimensions(Integer dimensions) {
+            this.dimensions = dimensions;
             return this;
         }
 

@@ -35,9 +35,9 @@ class EmbeddingResponse {
         private String object;
         private List<Float> embedding;
         private Integer index;
+        private String text;
 
-        EmbeddingData() {
-        }
+        EmbeddingData() {}
 
         EmbeddingData(String object, List<Float> embedding, Integer index) {
             this.object = object;
@@ -55,6 +55,13 @@ class EmbeddingResponse {
 
         public Integer getIndex() {
             return index;
+        }
+
+        /**
+         * The text of the chunk, returned by the contextualized embeddings endpoint when it chunked the input.
+         */
+        public String getText() {
+            return text;
         }
 
         /**

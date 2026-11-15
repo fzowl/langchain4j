@@ -37,8 +37,8 @@ Atlas](https://www.mongodb.com/docs/atlas/getting-started/) tutorial to
 learn more about setting up an account and connecting to a deployment.
 
 You also must have an API key with credits for an LLM service that has
-provides embedding models, such as [Voyage
-AI](https://www.voyageai.com/), which offers a free tier. For RAG
+provides embedding models, such as [Voyage AI by
+MongoDB](https://www.voyageai.com/), which offers a free tier. For RAG
 applications, you must also an API key for a service that has chat model
 functionality, such as [OpenAI](https://openai.com/api/) or models from
 [HuggingFace](https://huggingface.co/).
@@ -62,7 +62,7 @@ functionality, such as [OpenAI](https://openai.com/api/) or models from
 ```
 
 You must also install a dependency for your embedding model, for example
-Voyage AI:
+Voyage AI by MongoDB:
 
 ```xml
 <dependency>
@@ -112,7 +112,7 @@ import org.bson.Document;
 import java.io.*;
 import java.util.*;
 
-String embeddingApiKey = System.getenv("VOYAGE_AI_KEY");
+String embeddingApiKey = System.getenv("VOYAGE_API_KEY");
 String uri = System.getenv("MONGODB_URI");
 
 EmbeddingModel embeddingModel = VoyageAiEmbeddingModel.builder()
