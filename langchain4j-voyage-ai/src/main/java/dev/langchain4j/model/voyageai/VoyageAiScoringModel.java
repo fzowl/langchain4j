@@ -31,7 +31,7 @@ import org.slf4j.Logger;
 
 /**
  * An implementation of a {@link ScoringModel} that uses
- * <a href="https://docs.voyageai.com/docs/reranker">Voyage AI Rerank API</a>.
+ * <a href="https://docs.voyageai.com/docs/reranker">Voyage AI by MongoDB Rerank API</a>.
  */
 public class VoyageAiScoringModel implements ScoringModel {
 
@@ -59,7 +59,8 @@ public class VoyageAiScoringModel implements ScoringModel {
         // Below attributes are force to non-null
         this.maxRetries = getOrDefault(maxRetries, 2);
         this.modelName = ensureNotBlank(modelName, "modelName");
-        this.defaultRequestParameters = ScoringRequestParameters.builder().modelName(this.modelName).build();
+        this.defaultRequestParameters =
+                ScoringRequestParameters.builder().modelName(this.modelName).build();
         // Below attributes can be null
         this.truncation = truncation;
         this.topK = topK;
@@ -80,7 +81,8 @@ public class VoyageAiScoringModel implements ScoringModel {
         // Below attributes are force to non-null
         this.maxRetries = getOrDefault(builder.maxRetries, 2);
         this.modelName = ensureNotBlank(builder.modelName, "modelName");
-        this.defaultRequestParameters = ScoringRequestParameters.builder().modelName(this.modelName).build();
+        this.defaultRequestParameters =
+                ScoringRequestParameters.builder().modelName(this.modelName).build();
         // Below attributes can be null
         this.truncation = builder.truncation;
         this.topK = builder.topK;
@@ -263,7 +265,7 @@ public class VoyageAiScoringModel implements ScoringModel {
 
         /**
          * Sets the Voyage AI API key used to authenticate requests.
-         * See <a href="https://dash.voyageai.com/api-keys">Voyage AI dashboard</a> to obtain a key.
+         * See <a href="https://dashboard.voyageai.com/api-keys">Voyage AI by MongoDB dashboard</a> to obtain a key.
          *
          * @param apiKey the Voyage AI API key
          * @return {@code this}

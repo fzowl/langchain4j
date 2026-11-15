@@ -2,7 +2,7 @@
 sidebar_position: 19
 ---
 
-# Voyage AI
+# Voyage AI by MongoDB
 
 ## Maven Dependency
 
@@ -17,9 +17,22 @@ sidebar_position: 19
 ## APIs
 
 - `VoyageAiEmbeddingModel`
+- `VoyageAiContextualizedEmbeddingModel`
 
 ## Capabilities
 
+- **Models**: `voyage-4-large`, `voyage-4`, `voyage-4-lite` and `voyage-code-4` are the current text models
+  (`voyage-3-large`, `voyage-3.5`, `voyage-3.5-lite` and `voyage-code-3` are the previous generation, and
+  `voyage-finance-2` and `voyage-law-2` are the domain-specific ones). Pass the model as
+  `VoyageAiEmbeddingModelName` or as a string.
+- **Dimensions** (`output_dimension`, Matryoshka): the models above, except `voyage-finance-2` and `voyage-law-2`,
+  return 1024 dimensions by default and also accept 2048, 512 and 256, as does `voyage-multimodal-3.5`. Set it with
+  `VoyageAiEmbeddingModel.builder().dimensions(256)`, or per call with `EmbeddingRequest.builder().dimensions(256)`.
+  A model with a single fixed dimension rejects it. Nothing is sent unless you ask for it.
+- **Contextualized chunk embeddings** (`voyage-context-4`, `voyage-context-3`): `VoyageAiContextualizedEmbeddingModel`
+  embeds each chunk of a document in the context of the whole document. `embedDocuments` takes one string per
+  document, Voyage AI splits it into chunks (`enable_auto_chunking`, `chunk_size` 32000) and the result holds the
+  text and the embedding of every chunk, per document. `embedQueries` embeds queries, which are not chunked.
 - **Multimodal** (`voyage-multimodal-3`, `voyage-multimodal-3.5` — auto-detected from the model name): embeds
   text and images into a shared vector space; interleaved text + image is fused into a single embedding.
   Provide image inputs as `ImageContent` (URL or base64) in an `EmbeddingRequest`.

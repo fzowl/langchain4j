@@ -139,7 +139,9 @@ class VoyageAiMultimodalRoutingTest {
         assertThat(model.supportedContentTypes()).containsExactlyInAnyOrder(ContentType.TEXT, ContentType.IMAGE);
         assertThat(model.supportedParameters())
                 .containsExactlyInAnyOrder(
-                        EmbeddingRequestParameters.INPUT_TYPE, VoyageAiEmbeddingRequestParameters.TRUNCATION);
+                        EmbeddingRequestParameters.INPUT_TYPE,
+                        VoyageAiEmbeddingRequestParameters.TRUNCATION,
+                        EmbeddingRequestParameters.DIMENSIONS);
     }
 
     @Test

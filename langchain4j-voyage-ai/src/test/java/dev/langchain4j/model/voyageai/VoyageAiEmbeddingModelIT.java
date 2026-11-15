@@ -1,20 +1,22 @@
 package dev.langchain4j.model.voyageai;
 
+import static java.util.Arrays.asList;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.output.Response;
 import dev.langchain4j.store.embedding.CosineSimilarity;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
-
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
-
-import static java.util.Arrays.asList;
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 @EnabledIfEnvironmentVariable(named = "VOYAGE_API_KEY", matches = ".+")
 class VoyageAiEmbeddingModelIT {
@@ -138,6 +140,40 @@ class VoyageAiEmbeddingModelIT {
         assertThat(response.tokenUsage().totalTokenCount()).isNotNegative();
 
         assertThat(response.finishReason()).isNull();
+    }
+
+    @ParameterizedTest
+    @ValueSource(
+            strings = {"voyage-4-large", "voyage-4", "voyage-4-lite", "voyage-code-4", "voyage-3.5", "voyage-3.5-lite"})
+    void should_embed_with_each_current_model_in_its_native_and_a_smaller_dimension(String modelName) {
+
+        EmbeddingModel nativeModel = VoyageAiEmbeddingModel.builder()
+                .apiKey(System.getenv("VOYAGE_API_KEY"))
+                .modelName(modelName)
+                .build();
+        EmbeddingModel smallModel = VoyageAiEmbeddingModel.builder()
+                .apiKey(System.getenv("VOYAGE_API_KEY"))
+                .modelName(modelName)
+                .dimensions(256)
+                .build();
+
+        assertThat(nativeModel.embed("Hello World").content().dimension()).isEqualTo(1024);
+        assertThat(smallModel.embed("Hello World").content().dimension()).isEqualTo(256);
+        assertThat(smallModel.dimension()).isEqualTo(256);
+    }
+
+    @Test
+    void should_report_the_voyage_error_detail_for_an_unknown_model() {
+
+        EmbeddingModel model = VoyageAiEmbeddingModel.builder()
+                .apiKey(System.getenv("VOYAGE_API_KEY"))
+                .modelName("voyage-does-not-exist")
+                .maxRetries(0)
+                .build();
+
+        assertThatThrownBy(() -> model.embed("Hello World"))
+                .hasMessageContaining("detail")
+                .hasMessageContaining("voyage-does-not-exist is not supported");
     }
 
     @AfterEach
