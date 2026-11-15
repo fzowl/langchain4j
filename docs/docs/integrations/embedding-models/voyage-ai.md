@@ -21,6 +21,8 @@ sidebar_position: 19
 
 ## Capabilities
 
+- **API host**: by default requests go to `https://api.voyageai.com/v1/`, or to `https://ai.mongodb.com/v1/` when
+  the API key starts with `al-`. A `baseUrl(...)` set on the builder always wins.
 - **Models**: `voyage-4-large`, `voyage-4`, `voyage-4-lite` and `voyage-code-4` are the current text models
   (`voyage-3-large`, `voyage-3.5`, `voyage-3.5-lite` and `voyage-code-3` are the previous generation, and
   `voyage-finance-2` and `voyage-law-2` are the domain-specific ones). Pass the model as

@@ -24,6 +24,16 @@ import org.slf4j.Logger;
 class VoyageAiClient {
 
     public static final String DEFAULT_BASE_URL = "https://api.voyageai.com/v1/";
+    static final String MONGODB_BASE_URL = "https://ai.mongodb.com/v1/";
+    private static final String MONGODB_API_KEY_PREFIX = "al-";
+
+    /**
+     * The base URL used when none is given: the MongoDB endpoint for an API key that starts with {@code al-}
+     * (the rule of the official Voyage AI SDKs), the Voyage AI endpoint otherwise.
+     */
+    static String defaultBaseUrl(String apiKey) {
+        return apiKey != null && apiKey.startsWith(MONGODB_API_KEY_PREFIX) ? MONGODB_BASE_URL : DEFAULT_BASE_URL;
+    }
 
     private final HttpClient httpClient;
     private final String baseUrl;
@@ -49,7 +59,8 @@ class VoyageAiClient {
             this.httpClient = httpClient;
         }
 
-        this.baseUrl = ensureTrailingForwardSlash(ensureNotBlank(builder.baseUrl, "baseUrl"));
+        this.baseUrl = ensureTrailingForwardSlash(
+                ensureNotBlank(getOrDefault(builder.baseUrl, defaultBaseUrl(builder.apiKey)), "baseUrl"));
 
         Map<String, String> defaultHeaders = new HashMap<>();
         if (builder.apiKey != null) {

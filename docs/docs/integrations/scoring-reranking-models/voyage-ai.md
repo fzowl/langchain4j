@@ -19,6 +19,9 @@ sidebar_position: 5
 
 - `VoyageAiScoringModel`
 
+By default requests go to `https://api.voyageai.com/v1/`, or to `https://ai.mongodb.com/v1/` when the API key
+starts with `al-`. A `baseUrl(...)` set on the builder always wins.
+
 The recommended rerankers are `rerank-3` and `rerank-3-lite` (`VoyageAiScoringModelName.RERANK_3`,
 `RERANK_3_LITE`). `rerank-2.5`, `rerank-2.5-lite` and the older `rerank-2`, `rerank-2-lite`, `rerank-1`
 and `rerank-lite-1` remain available.

@@ -6,7 +6,6 @@ import static dev.langchain4j.internal.Utils.getOrDefault;
 import static dev.langchain4j.internal.ValidationUtils.ensureGreaterThanZero;
 import static dev.langchain4j.internal.ValidationUtils.ensureNotBlank;
 import static dev.langchain4j.internal.ValidationUtils.ensureNotEmpty;
-import static dev.langchain4j.model.voyageai.VoyageAiClient.DEFAULT_BASE_URL;
 import static java.lang.String.format;
 import static java.time.Duration.ofSeconds;
 
@@ -59,7 +58,7 @@ public class VoyageAiContextualizedEmbeddingModel {
 
         this.client = VoyageAiClient.builder()
                 .httpClientBuilder(builder.httpClientBuilder)
-                .baseUrl(getOrDefault(builder.baseUrl, DEFAULT_BASE_URL))
+                .baseUrl(builder.baseUrl)
                 .apiKey(ensureNotBlank(builder.apiKey, "apiKey"))
                 .timeout(getOrDefault(builder.timeout, ofSeconds(60)))
                 .logRequests(getOrDefault(builder.logRequests, false))
@@ -201,7 +200,9 @@ public class VoyageAiContextualizedEmbeddingModel {
         }
 
         /**
-         * Sets the base URL of the Voyage AI API. Defaults to {@code "https://api.voyageai.com/v1/"}.
+         * Sets the base URL of the Voyage AI API.
+         * Defaults to {@code "https://api.voyageai.com/v1/"}, or to {@code "https://ai.mongodb.com/v1/"} when the
+         * API key starts with {@code al-}. A base URL set here always wins.
          */
         public Builder baseUrl(String baseUrl) {
             this.baseUrl = baseUrl;
